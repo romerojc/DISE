@@ -86,7 +86,12 @@ void DS1307_SetTime(uint8_t year, uint8_t month, uint8_t date,
     data[6] = Decimal_to_BCD(month);
     data[7] = Decimal_to_BCD(year);
 
-    HAL_I2C_Master_Transmit(&hi2c1, DS1307_ADDRESS, data, 8, 100);
+    // OLD METHOD - Using Master_Transmit
+    // HAL_I2C_Master_Transmit(&hi2c1, DS1307_ADDRESS, data, 8, 100);
+
+    // NEW METHOD - Using Mem_Write
+    HAL_I2C_Mem_Write(&hi2c1, DS1307_ADDRESS, data[0],
+                      I2C_MEMADD_SIZE_8BIT, &data[1], 7, 100);
 }
 
 // Read DS1307 time
@@ -95,11 +100,13 @@ void DS1307_ReadTime(uint8_t *year, uint8_t *month, uint8_t *date,
     uint8_t regAddr = DS1307_REG_SECONDS;
     uint8_t data[7];
 
-    // Write register address
-    HAL_I2C_Master_Transmit(&hi2c1, DS1307_ADDRESS, &regAddr, 1, 100);
+    // OLD METHOD - Using Master_Transmit and Master_Receive
+    // HAL_I2C_Master_Transmit(&hi2c1, DS1307_ADDRESS, &regAddr, 1, 100);
+    // HAL_I2C_Master_Receive(&hi2c1, DS1307_ADDRESS, data, 7, 100);
 
-    // Read 7 bytes
-    HAL_I2C_Master_Receive(&hi2c1, DS1307_ADDRESS, data, 7, 100);
+    // NEW METHOD - Using Mem_Read
+    HAL_I2C_Mem_Read(&hi2c1, DS1307_ADDRESS, regAddr,
+                     I2C_MEMADD_SIZE_8BIT, data, 7, 100);
 
     *seconds = BCD_to_Decimal(data[0] & 0x7F);
     *minutes = BCD_to_Decimal(data[1]);
@@ -146,7 +153,7 @@ int main(void)
   RetargetInit(&huart2);
 
   // Set time ONCE to current date and time: 2025-12-04 01:34:50
- //DS1307_SetTime(25, 12, 4, 0, 22, 25);  // year, month, date, hours, minutes, seconds
+  //DS1307_SetTime(25, 12, 4, 1, 34, 50);  // year, month, date, hours, minutes, seconds
 
   printf("DS1307 RTC Initialized\r\n");
   HAL_Delay(1000);
