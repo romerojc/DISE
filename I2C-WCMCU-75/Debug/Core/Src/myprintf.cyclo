@@ -1,0 +1,2 @@
+../Core/Src/myprintf.c:8:6:RetargetInit	1
+../Core/Src/myprintf.c:14:5:_write	1
